@@ -90,13 +90,12 @@ async function init() {
     filtersNode.hidden = true;
     const attributes = result.attributes;
     const detailPanelNode = document.getElementById("detail-panel");
+    
     // a janky way to replace content in a single panel vs appending entire new one each time
     if (!detailPanelNode) {
       const panel = document.createElement("calcite-panel");
-      panel.heading = handleCasing(attributes["NAME"]);
-      panel.summary = `${handleCasing(attributes["CITY"])}, ${
-        attributes["STATE"]
-      }`;
+      panel.heading = handleCasing(attributes["PlaceName"]);
+      panel.summary = `${attributes["Rating"]} Stars(s)`;
       panel.id = "detail-panel";
       panel.addEventListener("calcitePanelBackClick", async () => {
         if (appState.savedExtent) {
@@ -108,40 +107,29 @@ async function init() {
       });
 
       const blockOne = document.createElement("calcite-block");
-      blockOne.heading = "Institution overview";
+      blockOne.heading = "Restaurant Overview";
       blockOne.collapsible = true;
       blockOne.open = true;
 
       const blockTwo = document.createElement("calcite-block");
-      blockTwo.heading = "Student body";
+      blockTwo.heading = "Location";
       blockTwo.collapsible = true;
       blockTwo.open = true;
 
       const blockThree = document.createElement("calcite-block");
-      blockThree.heading = "Housing";
+      blockThree.heading = "Business Information";
       blockThree.collapsible = true;
       blockThree.open = true;
 
-      const blockFour = document.createElement("calcite-block");
-      blockFour.heading = "Contact";
-      blockFour.collapsible = true;
-      blockFour.open = true;
-
-      const campusImageNode = document.createElement("div");
-      campusImageNode.id = "campusImageContainer";
-      campusImageNode.className = "campus-image-container";
-
-      blockOne.appendChild(campusImageNode);
-
-      if (attributes["WEBSITE"]) {
+      if (attributes["FileRoot"]) {
         const itemWebsite = document.createElement("calcite-button");
         itemWebsite.id = "detail-website-link";
         itemWebsite.iconEnd = "launch";
         itemWebsite.slot = "footer-actions";
         itemWebsite.scale = "l";
         itemWebsite.width = "full";
-        itemWebsite.innerText = `Learn more`;
-        itemWebsite.href = `http://${attributes["WEBSITE"]}`;
+        itemWebsite.innerText = `StreetView Image`;
+        itemWebsite.href = `https://www.eichcorp.com/views/${attributes["FileRoot"]}_pic.jpg`;
         itemWebsite.rel = `noref noreferrer`;
         itemWebsite.target = `blank`;
         panel.appendChild(itemWebsite);
@@ -161,118 +149,115 @@ async function init() {
       notice.appendChild(message);
       blockOne.appendChild(notice);
 
-      if (attributes["schoolType"]) {
+      if (attributes["RestType"] && attributes["RestType"] >= 0) {
         const label = document.createElement("calcite-label");
         label.layout = "inline-space-between";
-        label.innerText = "Institution Type";
+        label.innerText = "Restaurant Type";
         const span = document.createElement("span");
         span.id = "detail-type";
-        span.innerText = `${handleCasing(attributes["schoolType"])}`;
+        // TODO use config to translate code to string
+        var myText = `Type ${attributes["RestType"]}`;
+        span.innerText = myText;
         label.append(span);
         blockOne.appendChild(label);
       }
 
-      if (attributes["TOT_ENROLL"]) {
+      // ------------------------------------------------------------------------------------
+      // Location
+
+      if (attributes["Place_addr"]) {
         const label = document.createElement("calcite-label");
         label.layout = "inline-space-between";
-        label.innerText = "Total enrollment";
+        label.innerText = "Address";
         const span = document.createElement("span");
         span.id = "detail-total";
-        span.innerText = `${parseInt(
-          attributes["TOT_ENROLL"]
-        ).toLocaleString()}`;
+        span.innerText = `${attributes["Place_addr"]}`;
         label.append(span);
         blockTwo.appendChild(label);
       }
 
-      if (attributes["FT_ENROLL"]) {
-        const count =
-          attributes["FT_ENROLL"] === -999 ? "0" : attributes["FT_ENROLL"];
+      if (attributes["Latitude"]) {
         const label = document.createElement("calcite-label");
         label.layout = "inline-space-between";
-        label.innerText = "Full time enrollment";
+        label.innerText = "Latitude";
         const span = document.createElement("span");
         span.id = "detail-ft";
-        span.innerText = `${parseInt(count).toLocaleString()}`;
+        span.innerText = `${attributes["Latitude"]}`;
         label.append(span);
         blockTwo.appendChild(label);
       }
 
-      if (attributes["PT_ENROLL"]) {
-        const count =
-          attributes["PT_ENROLL"] === -999 ? "0" : attributes["PT_ENROLL"];
+      if (attributes["Longitude"]) {
         const label = document.createElement("calcite-label");
         label.layout = "inline-space-between";
-        label.innerText = "Part time enrollment";
+        label.innerText = "Longitude";
         const span = document.createElement("span");
         span.id = "detail-pt";
-        span.innerText = `${parseInt(count).toLocaleString()}`;
+        span.innerText = `${attributes["Longitude"]}`;
         label.append(span);
         blockTwo.appendChild(label);
       }
 
-      const label = document.createElement("calcite-label");
-      label.layout = "inline-space-between";
-      label.innerText = "Offers housing";
-      const span = document.createElement("span");
-      span.id = "detail-housing";
-      span.innerText = `${
-        parseInt(attributes["DORM_CAP"]) !== -999 ? "Yes" : "No"
-      }`;
-      label.append(span);
-      blockThree.appendChild(label);
+      // -----------------------------------------------------------------------------------
+      // Business Information
 
-      const labelCapacity = document.createElement("calcite-label");
-      labelCapacity.layout = "inline-space-between";
-      labelCapacity.innerText = "Dormitory capacity";
-      const spanCapacity = document.createElement("span");
-      spanCapacity.id = "detail-housing-capac";
-      spanCapacity.innerText = `${
-        parseInt(attributes["DORM_CAP"]) !== -999
-          ? parseInt(attributes["DORM_CAP"]).toLocaleString()
-          : "N/A"
-      }`;
+      // TODO translate integer codes to strings using config.js
 
-      labelCapacity.append(spanCapacity);
-      blockThree.appendChild(labelCapacity);
+      if (attributes["Rating"] && attributes["Rating"] >=0) {
+        const label = document.createElement("calcite-label");
+        label.layout = "inline-space-between";
+        label.innerText = "Rating";
+        const span = document.createElement("span");
+        span.id = "detail-housing";
+        span.innerText = `${attributes["Rating"]} Stars(s)`;
+        label.append(span);
+        blockThree.appendChild(label);
+      }
 
-      const labelAddress = document.createElement("calcite-label");
-      labelAddress.layout = "inline-space-between";
-      labelAddress.innerText = "Street Address";
-      const spanAddress = document.createElement("span");
-      spanAddress.id = "detail-address";
-      spanAddress.innerText = `${handleCasing(
-        attributes["ADDRESS"]
-      )}, ${handleCasing(attributes["CITY"])}, ${attributes["STATE"]}`;
-      labelAddress.append(spanAddress);
-      blockFour.appendChild(labelAddress);
+      if (attributes["RestType"] && attributes["Rating"] >=0) {
+        const label = document.createElement("calcite-label");
+        label.layout = "inline-space-between";
+        label.innerText = "Restaurant Type";
+        const span = document.createElement("span");
+        span.id = "detail-housing";
+        span.innerText = `Type ${attributes["RestType"]}`;
+        label.append(span);
+        blockThree.appendChild(label);
+      }
 
-      const labelWebsite = document.createElement("calcite-label");
-      labelWebsite.layout = "inline-space-between";
-      labelWebsite.innerText = "Website";
-      const spanWebsite = document.createElement("span");
-      spanWebsite.id = "detail-website";
-      spanWebsite.innerText = `${attributes["WEBSITE"]}`;
-      labelWebsite.append(spanWebsite);
-      blockFour.appendChild(labelWebsite);
+      if (attributes["HasSeating"] && attributes["HasSeating"] >=0) {
+        const label = document.createElement("calcite-label");
+        label.layout = "inline-space-between";
+        label.innerText = "Has Seating";
+        const span = document.createElement("span");
+        span.id = "detail-housing";
+        span.innerText = `${
+          parseInt(attributes["HasSeating"]) === 0 ? "Yes" : "No"
+        }`;
+        label.append(span);
+        blockThree.appendChild(label);
+      }
 
-      const labelPhone = document.createElement("calcite-label");
-      labelPhone.layout = "inline-space-between";
-      labelPhone.innerText = "Phone Number";
-      const spanPhone = document.createElement("span");
-      spanPhone.id = "detail-phone";
-      spanPhone.innerText = `${attributes["TELEPHONE"]}`;
-      labelPhone.append(spanPhone);
-      blockFour.appendChild(labelPhone);
+      // TODO come back to this NumSeats = 0 fails this if
+      // if (attributes["NumSeats"]) {
+        const label = document.createElement("calcite-label");
+        label.layout = "inline-space-between";
+        label.innerText = "Seats";
+        const span = document.createElement("span");
+        span.id = "detail-housing";
+        span.innerText = `${attributes["NumSeats"]}`;
+        label.append(span);
+        blockThree.appendChild(label);
+      // }
+
+      // -----------------------------------------------------------------------------------
 
       panel.appendChild(blockOne);
       panel.appendChild(blockTwo);
       panel.appendChild(blockThree);
-      panel.appendChild(blockFour);
 
       flowNode.appendChild(panel);
     } else {
-      /* replace existing element content */
       detailPanelNode.heading = handleCasing(attributes["NAME"]);
       detailPanelNode.summary = `${handleCasing(attributes["CITY"])}, ${
         attributes["STATE"]
@@ -332,8 +317,6 @@ async function init() {
       },
       { duration: 400 }
     );
-
-    getAttachment(objectId, result);
   }
 
   // uh probably do this elsewhere
@@ -350,28 +333,17 @@ async function init() {
   }
 
   function whereClause() {
-    let where = "TOT_ENROLL > 100";
-
-    if (appState.attendance) {
-      where += combineSQLStatements(
-        where,
-        `TOT_ENROLL > ${appState.attendance.min}`
-      );
-      where += combineSQLStatements(
-        where,
-        `TOT_ENROLL < ${appState.attendance.max}`
-      );
-    }
+    let where = appConfig.defaultWhereClause;
 
     if (appState.housing?.enabled) {
-      where += combineSQLStatements(where, `HOUSING=1`);
+      where += combineSQLStatements(where, `HasSeating=1`);
       where += combineSQLStatements(
         where,
-        `DORM_CAP > ${appState.housing.min}`
+        `NumSeats > ${appState.housing.min}`
       );
       where += combineSQLStatements(
         where,
-        `DORM_CAP < ${appState.housing.max}`
+        `NumSeats < ${appState.housing.max}`
       );
     }
 
@@ -382,7 +354,7 @@ async function init() {
         (value) =>
           (schoolWhere += combineSQLStatements(
             schoolWhere,
-            `HI_OFFER = ${value}`,
+            `Rating = ${value}`,
             "OR"
           ))
       );
@@ -397,7 +369,7 @@ async function init() {
         (value) =>
           (schoolWhere += combineSQLStatements(
             schoolWhere,
-            `NAICS_CODE = ${value}`,
+            `RestType = ${value}`,
             "OR"
           ))
       );
@@ -409,9 +381,6 @@ async function init() {
 
   function resetFilters() {
     schoolTypeNode.value = appConfig.defaultSchoolType;
-    appState.attendance = { ...appConfig.attendance };
-    attendanceNode.minValue = appConfig.attendance.min;
-    attendanceNode.maxValue = appConfig.attendance.max;
     appState.housing = { ...appConfig.housing };
     housingSectionNode.open = appConfig.housing.enabled;
     housingNode.minValue = appConfig.housing.min;
@@ -464,29 +433,29 @@ async function init() {
     const item = document.createElement("calcite-card");
     itemButton.appendChild(item);
 
-    if (parseInt(attributes["DORM_CAP"]) !== -999) {
+    if (parseInt(attributes["HasSeating"]) === 1) {
       const chip = document.createElement("calcite-chip");
-      chip.icon = "locator";
+      chip.icon = "organization";
       chip.slot = "footer-trailing";
       chip.scale = "s";
-      chip.innerText = "Housing";
+      chip.innerText = "Seating";
       item.appendChild(chip);
     }
 
     const chipState = document.createElement("calcite-chip");
     chipState.slot = "footer-leading";
     chipState.scale = "s";
-    chipState.icon = "group";
-    chipState.innerText = attributes["sizeRange"];
+    chipState.icon = "star";
+    chipState.innerText = `${attributes["Rating"]} Star(s)`;
     item.appendChild(chipState);
 
     const title = document.createElement("span");
     title.slot = "title";
-    title.innerText = handleCasing(attributes["NAME"]);
+    title.innerText = handleCasing(attributes["PlaceName"]);
 
     const summary = document.createElement("span");
     summary.slot = "subtitle";
-    summary.innerText = handleCasing(attributes["NAICS_DESC"]);
+    summary.innerText = handleCasing(attributes["Place_addr"]);
 
     item.appendChild(title);
     item.appendChild(summary);
@@ -543,7 +512,7 @@ async function init() {
 
     resultBlockNode.loading = false;
 
-    resultBlockNode.summary = `${appState.count} universities found within the map.`;
+    resultBlockNode.summary = `${appState.count} restaurants found within the map.`;
 
     resultsNode.innerHTML = "";
     if (results.features.length) {
@@ -638,24 +607,7 @@ async function init() {
     resultClickHandler(graphic.attributes[collegeLayer.objectIdField]);
   });
 
-  // Attendance
-  attendanceNode.min = appConfig.attendance.min;
-  attendanceNode.max = appConfig.attendance.max;
-  attendanceNode.minValue = appConfig.attendance.min;
-  attendanceNode.maxValue = appConfig.attendance.max;
-  attendanceNode.addEventListener("calciteSliderInput", (event) => {
-    appState.attendance.min = event.target.minValue;
-    appState.attendance.max = event.target.maxValue;
-    appState.hasFilterChanges = true;
-    filterMap();
-  });
-  attendanceNode.addEventListener("calciteSliderChange", (event) => {
-    appState.attendance.min = event.target.minValue;
-    appState.attendance.max = event.target.maxValue;
-    appState.hasFilterChanges = true;
-    queryItems();
-  });
-  // Housing
+  // Seating
   housingSectionNode.open = appConfig.housing.enabled;
   housingSectionNode.addEventListener("calciteBlockSectionToggle", (event) => {
     appState.housing.enabled = event.target.open;
@@ -679,7 +631,7 @@ async function init() {
     queryItems();
   });
 
-  // School type select
+  // Restuarant type select
   for (const [key, value] of Object.entries(appConfig.schoolTypes)) {
     const option = document.createElement("calcite-option");
     option.value = value.join(",");
@@ -691,7 +643,7 @@ async function init() {
     queryItems();
   });
 
-  // Degree type chip select
+  // Rating chip select
   for (const [key, value] of Object.entries(appConfig.programTypes)) {
     const chip = document.createElement("calcite-chip");
     chip.tabIndex = 0;
@@ -752,9 +704,6 @@ async function init() {
 
   // View extent changes
   view.watch("center", () => !appState.activeItem && queryItems());
-
-  view.ui.add("toggle-snippet", "bottom-left");
-  view.ui.add("code-snippet", "manual");
 
   queryItems();
 }
