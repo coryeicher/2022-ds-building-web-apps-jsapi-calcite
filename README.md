@@ -1,5 +1,6 @@
-# 2022-03-17
+# Updates
 - Swapped out Colleges and University data for European Restaurant demo data (from Esri geocoding service)
+- Updated filters for restuarant data
 - Removed code snippets and related/packages
 - Changed Filters element to a collapsible Block
 
